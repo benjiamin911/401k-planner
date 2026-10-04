@@ -1,0 +1,22 @@
+# Generated distribution and optional local exports
+/dist/
+/401k-calculator.html
+/exports/
+/local-exports/
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+
+# No dependencies are needed; ignore accidental local installations
+node_modules/
+npm-debug.log*
+
+# Operating system and editor artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

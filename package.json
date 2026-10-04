@@ -1,0 +1,14 @@
+{
+  "name": "401k-planner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A dependency-free Chinese annual 401(k) contribution planner.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test annual-calculations.test.cjs irs-limits.test.cjs policy-parser.test.cjs",
+    "build": "node build.cjs --pages",
+    "build:single": "node build.cjs"
+  }
+}

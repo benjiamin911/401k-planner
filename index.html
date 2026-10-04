@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#193d31">
+  <title>401(k) 年度规划 · 从年薪算出全年供款比例</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23193d31'/%3E%3Cpath d='M10 27V17h5v10m3 0V12h5v15m3 0V7h5v20' fill='%23dfefa1'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="irs-limits.js" defer></script>
+  <script src="annual-calculations.js" defer></script>
+  <script src="policy-parser.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#planner">跳转到计算器</a>
+  <header class="site-header">
+    <a class="brand" href="#"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><strong>401(k)</strong><span>年度规划</span></a>
+    <nav aria-label="页面导航"><a href="#planner">算全年比例</a><a href="#knowledge">401(k) 知识点 ↗</a></nav>
+    <span class="local-label"><i></i>薪资仅保存在本机</span>
+  </header>
+  <main class="page-shell">
+    <section class="hero">
+      <div><div class="eyebrow">PLAN ONCE. SAVE ALL YEAR.</div><h1>从一份年薪，<br>算出一年的供款计划。</h1><p>填入基本工资和公司配比规则。我们查 IRS 额度，<br class="desktop-break">帮你算清拿满 match、存满 401(k) 各要设多少比例。</p></div>
+      <div class="hero-note"><span class="note-mark" aria-hidden="true">↗</span><p>从第一份工资开始，<br>让退休储蓄按计划发生。</p><span>全年在职 · 单一雇主 · 未满 50 岁</span></div>
+    </section>
+
+    <section class="rules-panel" aria-label="年度 IRS 额度">
+      <div class="rules-heading"><div class="year-control"><label for="taxYear">规划年度</label><input id="taxYear" type="number" min="2023" max="2100" step="1" value="2026" aria-describedby="irs-status"></div><div class="source-actions"><span id="irs-status" role="status">正在查询 IRS…</span><button type="button" id="refresh-limits" class="text-button">更新额度 <span aria-hidden="true">↻</span></button></div></div>
+      <div class="rules-values"><div><span>普通 Pre-tax + Roth 共享额度</span><strong id="limit-deferral">—</strong></div><div><span>个人 + 公司年度总供款额度</span><strong id="limit-total">—</strong></div><div><span>公司配比的计薪上限</span><strong id="limit-compensation">—</strong></div><a id="irs-source" href="https://www.irs.gov/retirement-plans/cola-increases-for-dollar-limitations-on-benefits-and-contributions" target="_blank" rel="noopener noreferrer">IRS 官方来源 ↗</a></div>
+      <details class="source-detail"><summary>查看数据来源与更新状态</summary><p id="irs-detail">只请求公开 IRS 限额，不发送你填写的工资或公司政策。无法联网时会明确标注同年已核验的数据。</p><p class="fine-print">联邦总供款还受适用薪酬 100% 限制。公司计划可设更低上限；IRS 限额更新不会替代公司的年度政策确认。</p></details>
+    </section>
+
+    <section id="planner" class="planner-layout">
+      <form id="annual-form" class="input-panel panel" novalidate>
+        <div class="section-title"><span class="step">01</span><div><h2>基本工资</h2><p>从年初开始，均匀分到全年工资。</p></div></div>
+        <div class="field salary-field"><label for="annualSalary">税前基础年薪 <span class="field-tag">当前为演示金额</span></label><div class="salary-input"><span>$</span><input id="annualSalary" name="annualSalary" type="number" min="0" max="1000000000" step="100" value="200000" inputmode="decimal"></div><p class="help">按基础工资测算，不计入 RSU 或额外奖金；实际供款与配比工资范围以公司计划为准。</p></div>
+        <div class="field-row"><div class="field"><label for="payPeriods">每年发薪次数</label><select id="payPeriods" name="payPeriods"><option value="26">26 次 · 每两周一次</option><option value="24">24 次 · 每月两次</option><option value="12">12 次 · 每月一次</option><option value="52">52 次 · 每周一次</option><option value="27">27 次 · 特殊双周年度</option></select></div><div class="field"><label for="goal">今年的储蓄目标</label><select id="goal" name="goal"><option value="max-all">普通 + After-tax 都尽量存满</option><option value="max-regular">存满普通 401(k)</option><option value="match-only">先拿满公司 match</option></select></div></div>
+        <div class="field"><label for="rothSharePercent">普通供款如何分配</label><div class="allocation-buttons" role="group" aria-label="普通供款税务分配"><button type="button" data-roth="0">全部 Pre-tax</button><button type="button" data-roth="100" class="active">全部 Roth</button><button type="button" data-roth="50">各一半</button></div><div class="split-field"><span>普通供款中的 Roth 占比</span><div class="input-wrap"><input id="rothSharePercent" name="rothSharePercent" type="number" min="0" max="100" step="1" value="100"><span>%</span></div></div><p class="help">两者共享额度。此选择只分配供款，不判断哪种税务方式更适合你。</p></div>
+        <div class="divider"></div>
+        <div class="section-title"><span class="step">02</span><div><h2>公司的 match policy</h2><p>按员工工资百分比分档，逐档相加。</p></div></div>
+        <div class="preset-row"><label for="companyPreset">政策模板</label><select id="companyPreset"><option value="snap">Snap 示例</option><option value="custom">自定义公司政策</option><option value="none">公司不提供 match</option></select></div>
+        <div class="tier-head"><span>你贡献的工资比例</span><span>公司配比</span><span></span></div>
+        <div id="tier-list"></div>
+        <button type="button" id="add-tier" class="text-button add-tier">＋ 增加一档</button>
+        <div class="policy-summary" id="policy-summary">你存 5%，公司最多配 4%。</div>
+        <details class="paste-policy"><summary>有一段政策文字？粘贴并识别 <span>＋</span></summary><label for="policy-text" class="visually-hidden">公司配比政策原文</label><textarea id="policy-text" rows="4" placeholder="例如：Dollar-for-dollar on the first 3%, 50¢ on the dollar for the next 2%"></textarea><button type="button" id="parse-policy" class="small-button">识别配比档位</button><p id="policy-parse-status" class="help" role="status">支持常见的百分比配比、dollar-for-dollar 和 Snap 写法。识别后请核对上方档位，未识别的条件需手动设置。</p></details>
+        <div class="field"><label for="trueUpEligible">是否确认自己符合年度 true-up 条件？</label><select id="trueUpEligible" name="trueUpEligible"><option value="unknown">未确认 · 为可能的补配预留空间</option><option value="yes">已确认符合</option><option value="no">不提供或不符合</option></select><p class="help">True-up 是年后补算公司配比。存在该功能不代表每个人都符合资格。</p></div>
+        <div class="divider"></div>
+        <div class="section-title"><span class="step">03</span><div><h2>额外税后供款</h2><p>公司支持时，才有 Mega Backdoor 的入口。</p></div></div>
+        <label class="toggle-line"><span>公司允许普通 After-tax 供款</span><input id="afterTaxEnabled" name="afterTaxEnabled" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <div id="after-tax-settings"><div class="field"><label for="afterTaxPlanCap">公司 After-tax 年度金额上限</label><div class="input-wrap"><span>$</span><input id="afterTaxPlanCap" name="afterTaxPlanCap" type="number" min="0" step="100" value="33100" inputmode="decimal"></div><p class="help" id="plan-cap-note">$33,100 来自你提供的 Snap 2026 政策。公司上限需每年另行确认。</p></div><label class="checkbox-line"><input id="noSeparateCap" type="checkbox"><span>已确认公司没有单独的金额上限，仅受总额度限制</span></label><label class="checkbox-line"><input id="inPlanConversion" name="inPlanConversion" type="checkbox" checked><span>公司支持 After-tax → Roth 计划内转换</span></label></div>
+        <details class="advanced"><summary>其他供款规则 <span>＋</span></summary><div class="advanced-body"><div class="field"><label for="matchTiming">公司配比的计算方式</label><select id="matchTiming" name="matchTiming"><option value="paycheck">按每次工资计算</option><option value="annual">按全年计算</option></select></div><div class="field"><label for="otherEmployerAnnual">配比以外的全年公司供款</label><div class="input-wrap"><span>$</span><input id="otherEmployerAnnual" name="otherEmployerAnnual" type="number" min="0" step="100" value="0"></div><p class="help">例如 profit-sharing。填归属该年度的金额，不要把上方算出的 match 重复填入。</p></div><div class="field-row"><div class="field"><label for="payrollStep">工资系统比例步长</label><select id="payrollStep" name="payrollStep"><option value="0.01">0.01%</option><option value="0.1">0.1%</option><option value="1">1%（只接受整数）</option></select></div><div class="field"><label for="payrollPercentCap">个人总扣款比例上限</label><div class="input-wrap"><input id="payrollPercentCap" name="payrollPercentCap" type="number" min="0" max="100" step="1" value="100"><span>%</span></div></div></div><p class="help">100% 是试算上限，并不代表工资实际可全部扣入；还需留出税款、福利等扣款。普通 After-tax 默认不参与公司配比。</p></div></details>
+      </form>
+
+      <div class="results-column" aria-live="polite">
+        <div id="error-box" class="notice error" role="alert" hidden></div>
+        <div id="feasibility-notice" class="notice warning" hidden></div>
+        <article class="result-hero"><div class="result-top"><span>全年目标 · 理论供款比例</span><span class="small-pill" id="result-year">2026 计划</span></div><div class="rate-grid"><div><span class="rate-label">普通 401(k)</span><div class="rate"><strong id="regular-rate">—</strong><span>%</span></div><p id="regular-allocation">Pre-tax + Roth</p></div><div><span class="rate-label">额外 After-tax</span><div class="rate accent"><strong id="after-rate">—</strong><span>%</span></div><p id="conversion-label">可用于 Mega Backdoor Roth</p></div></div><div class="hero-result-foot"><span>约数仅供试算，设置比例见下方</span><strong>合计 <span id="combined-rate">—</span>% 工资</strong></div></article>
+        <div class="paycheck-panel panel"><div class="panel-heading"><h3>每次发薪，大约这样分配</h3><span id="paycheck-label">每年 26 次</span></div><div class="paycheck-rows"><div><span><i class="dot green"></i>Pre-tax</span><strong id="pre-pay">—</strong><small id="pre-rate">—</small></div><div><span><i class="dot sage"></i>Roth 401(k)</span><strong id="roth-pay">—</strong><small id="roth-rate">—</small></div><div><span><i class="dot gold"></i>普通 After-tax</span><strong id="after-pay">—</strong><small id="after-pay-rate">—</small></div></div><p class="help">以上按理论目标平均分配到全年，金额显示到分。工资系统的比例步长及分币舍入会产生差额。</p></div>
+        <article class="match-card"><span class="match-icon" aria-hidden="true">＋</span><div><span id="match-card-label">逐次拿满配比，普通供款需达到</span><strong><span id="match-threshold">—</span>% <small id="match-basis-label">每次工资</small></strong><p id="match-explanation">不包含普通 After-tax。</p></div><div class="match-value"><span>政策最高年度 match</span><strong id="match-max">—</strong></div></article>
+        <article class="panel annual-summary"><div class="panel-heading"><h3 id="annual-title">你的年度储蓄目标</h3><span>USD / 年</span></div><div class="annual-total" id="annual-total">—</div><p id="annual-total-caption">按选定目标与公司配比公式估算</p><div class="stacked-bar" aria-hidden="true"><span id="bar-regular"></span><span id="bar-after"></span><span id="bar-employer"></span></div><div class="annual-breakdown"><div><span><i class="dot green"></i>个人普通供款</span><strong id="annual-regular">—</strong></div><div><span><i class="dot gold"></i>个人 After-tax</span><strong id="annual-after">—</strong></div><div><span><i class="dot blue"></i>公司供款估算</span><strong id="annual-employer">—</strong></div></div><div class="total-own"><span>其中，你自己全年存入</span><strong id="annual-own">—</strong></div><p class="help" id="employer-reserve-note"></p></article>
+        <div id="warning-box" class="notice warning" hidden></div>
+        <details class="panel payroll-details"><summary><span>工资系统可设置的保守比例</span><span>＋</span></summary><p class="help">下面是全年保持同一比例、按分舍入且不超过额度的保守方案。若比例步长较大，可能留出未存满空间；不假定工资系统自动截停。</p><div class="safe-rates"><div><span>Pre-tax</span><strong id="safe-pre">—</strong></div><div><span>Roth</span><strong id="safe-roth">—</strong></div><div><span>After-tax</span><strong id="safe-after">—</strong></div></div><div class="safe-gaps"><span>普通供款距目标还差 <strong id="regular-gap">—</strong></span><span>After-tax 距目标还差 <strong id="after-gap">—</strong></span></div><p class="help" id="safe-note"></p></details>
+        <details class="panel calculation-details"><summary><span>展开额度计算过程</span><span>＋</span></summary><div class="formula"><div><span>总额度（同时受 100% 薪酬限制）</span><strong id="formula-total">—</strong></div><div><span>− 普通供款目标</span><strong id="formula-regular">—</strong></div><div><span>− 公司配比及其他供款预留</span><strong id="formula-employer">—</strong></div><div><span>＝ IRS 规则下 After-tax 空间</span><strong id="formula-room">—</strong></div><div><span>再受公司上限及工资空间限制</span><strong id="formula-after">—</strong></div></div><p class="help">预留可能发生的 true-up，不表示公司保证支付。目标选择、是否允许 After-tax 以及工资比例上限会影响最终计划。</p></details>
+      </div>
+    </section>
+
+    <section id="knowledge" class="knowledge-section">
+      <div class="knowledge-heading"><div><div class="eyebrow">KNOW WHAT YOU'RE CONTRIBUTING TO</div><h2>把数字算清，也把知识记住。</h2><p>401(k) 是装投资的退休账户；供款方式决定税务规则，投资选择决定风险和回报。</p></div><span class="knowledge-number">401(k)<br><small>基础知识</small></span></div>
+      <article class="panel comparison"><h3>三种供款方式，区别在哪里？</h3><div class="table-scroll"><table><thead><tr><th></th><th><i class="dot green"></i>Pre-tax 401(k)</th><th><i class="dot sage"></i>Roth 401(k)</th><th><i class="dot gold"></i>普通 After-tax 401(k)</th></tr></thead><tbody><tr><th>现在缴税</th><td>供款通常降低当年的联邦应税工资</td><td>供款使用已缴所得税的工资</td><td>供款使用已缴所得税的工资</td></tr><tr><th>未来取款</th><td>本金和收益通常按普通收入纳税</td><td>合格取款时，本金和收益免税</td><td>已纳税本金不重复缴税；收益通常应税</td></tr><tr><th>年度额度</th><td colspan="2">两者共享普通供款额度：<strong class="inline-deferral">—</strong>（所选年度，未满 50 岁）</td><td>受年度总供款额度、公司规则和薪酬约束</td></tr><tr><th>主要用途</th><td>获得当年的供款抵税待遇</td><td>积累未来符合条件的免税资金</td><td>增加退休供款；计划允许时可转 Roth</td></tr></tbody></table></div><p class="help">Roth 与普通 After-tax 都是税后供款，但不是同一种资金来源。选择 Roth 本身不会提高基金回报；Pre-tax 与 Roth 的取舍取决于现在和未来税率等因素。</p></article>
+      <div class="knowledge-grid">
+        <article class="knowledge-card"><span class="card-index">01 / THE MATCH</span><h3>Match 是公司另给你的钱。</h3><p>例如你提供的 Snap 政策：前 3% 一比一配比，接下来的 2% 配一半。你贡献 5%，公司最多配 4%。</p><div class="example-line">3% × 100% ＋ 2% × 50% <strong>＝ 4%</strong></div><p>这个 4% 是符合条件工资的比例，不是投资收益率。Snap 不配比普通 After-tax；其他公司的规则可能不同。</p></article>
+        <article class="knowledge-card"><span class="card-index">02 / KEEP IT EVEN</span><h3>全年均匀供款，更容易拿到每次 match。</h3><p>按工资配比的计划，如果年中提前存满普通额度，后续没有普通供款时，当期 match 可能停止。</p><p><strong>True-up</strong> 是年后按计划规则补算漏掉的配比。是否符合条件、是否要求在职，需要单独确认；它不会把 After-tax 变成可配比供款。</p></article>
+        <article class="knowledge-card"><span class="card-index">03 / MEGA BACKDOOR</span><h3>多存进去，再完成 Roth 转换。</h3><p>Mega Backdoor 常见路径是：普通 After-tax 供款 → 计划内 Roth 转换。公司要同时支持相应供款和转换功能。</p><div class="example-line flow-label">After-tax <span>→</span> Roth 401(k)</div><p>已纳税本金通常不再次缴税；转换前的收益可能需要纳税。支持转换不等于已开启自动转换，需在 Fidelity 设置或交易记录中确认。</p></article>
+        <article class="knowledge-card"><span class="card-index">04 / DIFFERENT NUMBERS</span><h3>供款、转换与账户余额，分开看。</h3><p><strong>供款</strong>是今年新存进去的钱，会占年度额度。<strong>转换</strong>改变资金税务类别，不会重新获得供款空间。</p><p><strong>余额</strong>包含往年资金与投资涨跌，可以超过当年供款上限。基金 Exchanges 中标为 Roth conversion 来源的金额，也不等于今年的转换总额。</p></article>
+      </div>
+      <details class="ira-note"><summary>Roth IRA 和 Roth 401(k) 有什么不同？ <span>＋</span></summary><p>Roth IRA 是个人开立的退休账户，Roth 401(k) 属于雇主计划。IRA 有自己独立的年度供款额度，直接 Roth IRA 供款还受报税身份及 MAGI 收入门槛限制。常规 Backdoor IRA 与这里的 Mega Backdoor 使用不同入口；已有税前 IRA 资金还会影响常规 Backdoor 的税务结果。本计算器只规划雇主 401(k)。</p></details>
+    </section>
+    <footer><div><a class="brand footer-brand" href="#">401(k) <span>年度规划</span></a><span id="storage-status">输入保存在当前浏览器</span><button id="reset-plan" class="text-button" type="button">恢复演示数据</button></div><p>按全年在职、固定基本工资、单一雇主、未满 50 岁测算。金额仅为供款计划，不预测投资回报。计薪封顶、供款百分比基数与实际扣款均以公司计划为准；所需设置请在工资系统中完成。</p><div class="footer-links"><a href="https://www.irs.gov/retirement-plans/cola-increases-for-dollar-limitations-on-benefits-and-contributions" target="_blank" rel="noopener noreferrer">IRS 历年限额 ↗</a><a href="https://www.fidelity.com/viewpoints/retirement/401k-contributions" target="_blank" rel="noopener noreferrer">Fidelity After-tax 说明 ↗</a><a href="https://www.fidelity.com/learning-center/smart-money/average-401k-match" target="_blank" rel="noopener noreferrer">Match 与 true-up ↗</a></div></footer>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <noscript><p class="noscript">请启用 JavaScript 来计算供款比例。也可阅读下面的知识点。</p></noscript>
+</body>
+</html>
